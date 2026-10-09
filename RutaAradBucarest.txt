@@ -1,0 +1,180 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RutaAradBucarest
+{
+    class Nodo
+    {
+        public string Nombre;
+        public int CostoG;     // Costo real desde Arad
+        public int CostoH;     // Distancia heurística hasta Bucarest
+        public int CostoF;     // Costo total (g+h)
+        public Nodo Padre;     // La ciudad anterior
+
+        public Nodo(string nombre, int costoG, int costoH, Nodo padre)
+        {
+            Nombre = nombre;
+            CostoG = costoG;
+            CostoH = costoH;
+            CostoF = costoG + costoH;
+            Padre = padre;
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            //Caminos posibles desde cada ciudad
+            Dictionary<string, Dictionary<string, int>> mapa = new Dictionary<string, Dictionary<string, int>>()
+            {
+                { "Arad", new Dictionary<string, int>() { {"Zerind", 75}, {"Timisoara", 118}, {"Sibiu", 140} } },
+                { "Zerind", new Dictionary<string, int>() { {"Arad", 75}, {"Oradea", 71} } },
+                { "Oradea", new Dictionary<string, int>() { {"Zerind", 71}, {"Sibiu", 151} } },
+                { "Timisoara", new Dictionary<string, int>() { {"Arad", 118}, {"Lugoj", 111} } },
+                { "Lugoj", new Dictionary<string, int>() { {"Timisoara", 111}, {"Mehadia", 70} } },
+                { "Mehadia", new Dictionary<string, int>() { {"Lugoj", 70}, {"Drobeta", 75} } },
+                { "Drobeta", new Dictionary<string, int>() { {"Mehadia", 75}, {"Craiova", 120} } },
+                { "Craiova", new Dictionary<string, int>() { {"Drobeta", 120}, {"Rimnicu Vilcea", 146}, {"Pitesti", 138} } },
+                { "Sibiu", new Dictionary<string, int>() { {"Arad", 140}, {"Oradea", 151}, {"Fagaras", 99}, {"Rimnicu Vilcea", 80} } },
+                { "Fagaras", new Dictionary<string, int>() { {"Sibiu", 99}, {"Bucharest", 211} } },
+                { "Rimnicu Vilcea", new Dictionary<string, int>() { {"Sibiu", 80}, {"Craiova", 146}, {"Pitesti", 97} } },
+                { "Pitesti", new Dictionary<string, int>() { {"Rimnicu Vilcea", 97}, {"Craiova", 138}, {"Bucharest", 101} } },
+                { "Bucharest", new Dictionary<string, int>() { {"Fagaras", 211}, {"Pitesti", 101} } }
+            };
+
+            //Tabla de heuristica
+            Dictionary<string, int> heuristica = new Dictionary<string, int>()
+            {
+                { "Arad", 366 },          
+                { "Bucharest", 0 },       
+                { "Craiova", 160 },       
+                { "Drobeta", 242 },       
+                { "Eforie", 161 },        
+                { "Fagaras", 178 },       
+                { "Giurgiu", 77 },        
+                { "Hirsova", 151 },       
+                { "Iasi", 226 },          
+                { "Lugoj", 244 },         
+                { "Mehadia", 241 },       
+                { "Neamt", 234 },         
+                { "Oradea", 380 },        
+                { "Pitesti", 98 },        
+                { "Rimnicu Vilcea", 193 },
+                { "Sibiu", 253 },         
+                { "Timisoara", 329 },     
+                { "Urziceni", 80 },       
+                { "Vaslui", 199 },        
+                { "Zerind", 374 }         
+            };
+
+            //Listas abiertas y cerradas
+            List<Nodo> listaAbierta = new List<Nodo>();
+            List<string> listaCerrada = new List<string>();
+
+            //Inicio
+            Nodo nodoInicial = new Nodo("Arad", 0, heuristica["Arad"], null);
+            listaAbierta.Add(nodoInicial);
+
+            Nodo nodoActual = null;
+            bool encontrado = false;
+
+            while (listaAbierta.Count > 0)
+            {
+                //Buscar en la lista abierta el nodo con el menor CostoF
+                int indiceMinimo = 0;
+                for (int i = 1; i < listaAbierta.Count; i++)
+                {
+                    if (listaAbierta[i].CostoF < listaAbierta[indiceMinimo].CostoF)
+                    {
+                        indiceMinimo = i;
+                    }
+                }
+
+                //Sacar ese nodo de la lista abierta
+                nodoActual = listaAbierta[indiceMinimo];
+                listaAbierta.RemoveAt(indiceMinimo);
+
+                //Si se llega a Bucarest se termina
+                if (nodoActual.Nombre == "Bucharest")
+                {
+                    encontrado = true;
+                    break;
+                }
+
+                //Meter la ciudad actual a la lista cerrada
+                listaCerrada.Add(nodoActual.Nombre);
+
+                //Expandir los vecinos de la ciudad actual
+                foreach (KeyValuePair<string, int> vecino in mapa[nodoActual.Nombre])
+                {
+                    string nombreVecino = vecino.Key;
+                    int costoCarretera = vecino.Value;
+
+                    //Si el vecino ya está en la lista cerrada, lo ignoramos
+                    if (listaCerrada.Contains(nombreVecino))
+                    {
+                        continue;
+                    }
+
+                    //Calcular nuevos costos
+                    int nuevoG = nodoActual.CostoG + costoCarretera;
+                    int nuevoH = heuristica[nombreVecino];
+
+                    //Crear el nodo hijo
+                    Nodo nodoHijo = new Nodo(nombreVecino, nuevoG, nuevoH, nodoActual);
+
+                    //Revisar si ya está en la lista abierta con un costo mayor
+                    bool yaExisteEnAbierta = false;
+                    for (int i = 0; i < listaAbierta.Count; i++)
+                    {
+                        if (listaAbierta[i].Nombre == nombreVecino)
+                        {
+                            yaExisteEnAbierta = true;
+                            //Si el nuevo camino es mejor reemplazamos el anterior
+                            if (nodoHijo.CostoG < listaAbierta[i].CostoG)
+                            {
+                                listaAbierta[i] = nodoHijo;
+                            }
+                            break;
+                        }
+                    }
+
+                    //Si no estaba en la lista abierta, lo agregamos
+                    if (!yaExisteEnAbierta)
+                    {
+                        listaAbierta.Add(nodoHijo);
+                    }
+                }
+            }
+
+            //Para imprimir la ruta
+            if (encontrado)
+            {
+                List<string> ruta = new List<string>();
+                Nodo temp = nodoActual;
+                while (temp != null)
+                {
+                    ruta.Add(temp.Nombre + " (Costo: " + temp.CostoG + ")");
+                    temp = temp.Padre;
+                }
+
+                ruta.Reverse();
+
+                Console.WriteLine("Ruta encontrada hacia Bucarest\n");
+                foreach (string paso in ruta)
+                {
+                    Console.WriteLine("Paso: " + paso);
+                }
+                Console.WriteLine("\nCosto total del recorrido: " + nodoActual.CostoG);
+            }
+            else
+            {
+                Console.WriteLine("No se encontró una ruta.");
+            }
+        }
+    }
+}
