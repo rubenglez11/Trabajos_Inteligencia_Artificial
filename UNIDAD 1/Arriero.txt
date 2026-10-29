@@ -1,0 +1,161 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Arriero
+{
+    class Program
+    {
+        class Estado
+        {
+            public int arriero, puma, cabra, lechuga;
+            public Estado padre;
+            public Estado(int a, int p, int c, int l, Estado pad = null)
+            {
+                arriero = a;
+                puma = p;
+                cabra = c;
+                lechuga = l;
+                padre = pad;
+            }
+        }
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Inicia la búsqueda en profundidad");
+            BuscarSolucion();
+        }
+
+        static bool EsValido(Estado e)
+        {
+            // Verificar si el e es válido
+            if (e.puma == e.cabra && e.arriero != e.puma)
+                return false; // El puma se come a la cabra
+            if (e.cabra == e.lechuga && e.arriero != e.cabra)
+                return false; // La cabra se come a la lechuga
+            return true;
+        }
+
+        static bool SonIguales(Estado a, Estado b)
+        {
+            return a.arriero == b.arriero && a.puma == b.puma && a.cabra == b.cabra && a.lechuga == b.lechuga;
+        }
+
+        static bool Contiene(List<Estado> lista, Estado e)
+        {
+            foreach (var item in lista)
+            {
+                if (SonIguales(item, e))
+                    return true;
+            }
+            return false;
+        }
+
+        static void ImprimirCaminoFinal(Estado final)
+        {
+            List<Estado> camino = new List<Estado>();
+            Estado actual = final;
+
+            while (actual != null)
+            {
+                camino.Add(actual);
+                actual = actual.padre;
+            }
+
+            camino.Reverse(); // Para mostrarlo del inicio al fin
+
+            Console.WriteLine("Se encontró la solución: ");
+            foreach (var e in camino)
+            {
+                char ai;
+                if(e.arriero == 0)
+                    ai = 'I';
+                else
+                    ai = 'D';
+
+                char pi;
+                if(e.puma == 0)
+                    pi = 'I';
+                else
+                    pi = 'D';
+
+                char ci;
+                if(e.cabra == 0)
+                    ci = 'I';
+                else
+                    ci = 'D';
+
+                char li;
+                if(e.lechuga == 0)
+                    li = 'I';
+                else
+                    li = 'D';
+
+                Console.WriteLine("Estado (A, P, C, L): " + ai + ", " + pi + ", " + ci + ", " + li);
+            }
+        }
+
+        static void BuscarSolucion()
+        {
+            List<Estado> open = new List<Estado>();
+            List<Estado> closed = new List<Estado>();
+
+            open.Add(new Estado(0, 0, 0, 0));
+
+            while(open.Count > 0)
+            {
+                Estado X = open[0];
+                open.RemoveAt(0);
+
+                //Console.WriteLine($"Estado actual (A, P, C, L): {X.arriero}, {X.puma}, {X.cabra}, {X.lechuga}");
+
+                if (X.arriero == 1 && X.puma == 1 && X.cabra == 1 && X.lechuga == 1)
+                {
+                    ImprimirCaminoFinal(X);
+                    return;
+                }
+                else
+                {
+                    List<Estado> sucesores = new List<Estado>();
+                    int nuevaOrilla = 1 - X.arriero; // Cambiar de orilla
+
+                    sucesores.Add(new Estado(nuevaOrilla, X.puma, X.cabra, X.lechuga, X));
+                    if (X.arriero == X.puma)
+                    {
+                        sucesores.Add(new Estado(nuevaOrilla, nuevaOrilla, X.cabra, X.lechuga, X));
+                    }
+                    if (X.arriero == X.cabra)
+                    {
+                        sucesores.Add(new Estado(nuevaOrilla, X.puma, nuevaOrilla, X.lechuga, X));
+                    }
+                    if (X.arriero == X.lechuga)
+                    {
+                        sucesores.Add(new Estado(nuevaOrilla, X.puma, X.cabra, nuevaOrilla, X));
+                    }
+
+                    closed.Add(X);
+
+                    List<Estado> sucesoresValidos = new List<Estado>();
+                    foreach (var s in sucesores)
+                    {
+                        if (EsValido(s))
+                        {
+                            if (!Contiene(closed, s) && !Contiene(open, s))
+                            {
+                                sucesoresValidos.Add(s);
+                            }
+                        }
+                    }
+
+                    for (int i = 0; i < sucesoresValidos.Count; i++)
+                    {
+                        open.Insert(0, sucesoresValidos[i]);
+                    }
+                }
+            }
+
+            Console.WriteLine("No se encontró solución");
+        }
+    }
+}
