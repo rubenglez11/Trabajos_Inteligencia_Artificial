@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TeoremaDeBayes
+{
+    //Ejemplo 1: Diagnóstico de Falla en un Servidor (Clasificación Binaria)
+    //Contexto: Un sistema de monitoreo analiza si un servidor va a sufrir una Caída(C)
+    //o mantendrá un estado Normal(N), dado que se detecta un Pico de CPU(P).
+
+    //P(C) [Prior Caída]	0.05 (El 5% de los servidores sufren caídas)
+    //P(N) [Prior Normal]	0.95 (El 95% opera normalmente)
+    //P(P | C) [Likelihood]	0.90 (Si va a caer, el 90% de las veces muestra pico de CPU)
+    //P(P | N) [Likelihood]	0.15 (Si opera normal, el 15% de las veces muestra pico por tareas rutinarias)
+
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("TEOREMA DE BAYES");
+            double C = 0.05;
+            double N = 0.95;
+            double PC = 0.90;
+            double PN = 0.15;
+            Console.WriteLine("Probabilidad de Caída (P(C)): " + C);
+            Console.WriteLine("Probabilidad de Normal (P(N)): " + N);
+            Console.WriteLine("Probabilidad de Pico dado Caída (P(P | C)): " + PC);
+            Console.WriteLine("Probabilidad de Pico dado Normal (P(P | N)): " + PN);
+
+            //Paso 1: Calcular la Evidencia Total P(P)
+            //P(P) = P(P | C) · P(C) + P(P | N) · P(N)
+            double pP = (PC * C) + (PN * N);
+
+            //Paso 2: Calcular la Probabilidad A Posteriori P(C | P)
+            //P(C | P) = [ P(P | C) · P(C) ] / P(P) = 0.045 / 0.1875 = 0.24 (24%)
+            double CP = (PC * C) / pP;
+
+            Console.WriteLine("P(P): "+ pP);
+            Console.WriteLine("Probabilidad de que haya caída después de un pico de CPU: " + CP);
+
+        }
+    }
+}

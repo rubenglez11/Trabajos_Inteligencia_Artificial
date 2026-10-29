@@ -1,0 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TeoremaDeBayes
+{
+    //Tres máquinas, A, B y C, producen el 45%, 30% y 25%, respectivamente,
+    //del total de las piezas producidas en una fábrica. Los porcentajes de
+    //producción defectuosa de estas máquinas son del 3%, 4% y 5%.
+    //a. Seleccionamos una pieza al azar; calcula la probabilidad de que sea defectuosa.
+    //b. Tomamos, al azar, una pieza y resulta ser defectuosa; calcula la probabilidad de haber sido producida por la máquina B.
+    //c. ¿Qué máquina tiene la mayor probabilidad de haber producido la citada pieza defectuosa?
+
+
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            double pA = 0.45;
+            double pB = 0.30;
+            double pC = 0.25;
+
+            double AD = 0.03;
+            double AN = 1.0 - AD;
+
+            double BD = 0.04;
+            double BN = 1.0 - BD;
+
+            double CD = 0.05;
+            double CN = 1.0 - CD;
+
+            //a. P(D) = P(A) · P(D/A) + P(B) · P(D/B) + P(C) · P(D/C)
+            double probD = pA * AD + pB * BD + pC * CD;
+
+            //b. P(B/D) = (P(B) · P(D/B)) / (P(A) · P(D/A) + P(B) · P(D/B) + P(C) · P(D/C))
+            double probBD = (pB * BD) / probD;
+
+            //c. P(A/D) = (P(A) · P(D/A)) / (P(A) · P(D/A) + P(B) · P(D/B) + P(C) · P(D/C))
+            //   P(C/D) = (P(C) · P(D/C)) / (P(A) · P(D/A) + P(B) · P(D/B) + P(C) · P(D/C))
+            double probAD = (pA * AD) / probD;
+            double probCD = (pC * CD) / probD;
+
+            Console.WriteLine("TEOREMA DE BAYES");
+            Console.WriteLine("a. Probabilidad de que la pieza sea defectuosa: " + probD);
+            Console.WriteLine("b. Probabilidad de que la pieza defectuosa haya sido producida por la máquina B: " + probBD);
+            Console.WriteLine("c. Probabilidad de que la pieza defectuosa haya sido producida por la máquina A: " + probAD);
+            Console.WriteLine("c. Probabilidad de que la pieza defectuosa haya sido producida por la máquina C: " + probCD);
+
+        }
+    }
+}

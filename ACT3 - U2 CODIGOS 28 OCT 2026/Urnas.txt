@@ -1,0 +1,41 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TeoremaDeBayes
+{
+    //Tenemos tres urnas: A con 3 bolas rojas y 5 negras,
+    //B con 2 bolas rojas y 1 negra y
+    //C con 2 bolas rojas y 3 negras.
+    //Escogemos una urna al azar y extraemos una bola.
+    //Si la bola ha sido roja, ¿cuál es la probabilidad de haber sido extraída de la urna A?
+
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            double rojasA = 3, negrasA = 5;
+            double rojasB = 2, negrasB = 1;
+            double rojasC = 2, negrasC = 3;
+
+            double pA = 1.0 / 3.0;
+            double pB = 1.0 / 3.0;
+            double pC = 1.0 / 3.0;
+
+            double totalA = rojasA + negrasA;
+            double totalB = rojasB + negrasB;
+            double totalC = rojasC + negrasC;
+
+            double PRA = rojasA / totalA;
+            double PRB = rojasB / totalB;
+            double PRC = rojasC / totalC;
+
+            double prob = (pA * PRA) / ((pA * PRA) + (pB * PRB) + (pC * PRC));
+
+            Console.WriteLine("TEOREMA DE BAYES");
+            Console.WriteLine("Probabilidad de que la bola roja haya salido de la urna A: " + prob);
+        }
+    }
+}
